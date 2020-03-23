@@ -1,0 +1,21 @@
+{
+  "name": "pact",
+  "version": "1.0.0",
+  "main": "handler.js",
+  "scripts": {
+    "offline": "sls offline start --skipCacheInvalidation"
+  },
+  "author": "",
+  "keywords": [],
+  "description": "",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "bcryptjs-then": "^1.0.1",
+    "jsonwebtoken": "^8.2.1",
+    "serverless-mysql": "^1.5.3",
+    "uuid": "^2.0.3"
+  },
+  "devDependencies": {
+    "serverless-offline": "6.0.0"
+  }
+}
