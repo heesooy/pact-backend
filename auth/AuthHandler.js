@@ -6,9 +6,9 @@ const bcrypt = require('bcryptjs-then');
  * Functions
  */
 
-module.exports.login = (event, context) => {
+module.exports.login = async (event, context, callback) => {
   context.callbackWaitsForEmptyEventLoop = false;
-  return login(JSON.parse(event.body))
+  let response = await login(JSON.parse(event.body))
     .then(session => ({
       statusCode: 200,
       body: JSON.stringify(session)
@@ -16,13 +16,15 @@ module.exports.login = (event, context) => {
     .catch(err => ({
       statusCode: err.statusCode || 500,
       headers: { 'Content-Type': 'text/plain' },
-      body: { stack: err.stack, message: err.message }
+      body: JSON.stringify({ stack: err.stack, message: err.message })
     }));
+
+    callback(null, response);
 };
 
-module.exports.register = (event, context) => {
+module.exports.register = async (event, context, callback) => {
   context.callbackWaitsForEmptyEventLoop = false;
-  return register(JSON.parse(event.body))
+  let response = await register(JSON.parse(event.body))
     .then(session => ({
       statusCode: 200,
       body: JSON.stringify(session)
@@ -30,8 +32,10 @@ module.exports.register = (event, context) => {
     .catch(err => ({
       statusCode: err.statusCode || 500,
       headers: { 'Content-Type': 'text/plain' },
-      body: err.message
+      body: JSON.stringify({ message: err.message })
     }));
+
+    callback(null, response);
 };
 
 /**
@@ -69,7 +73,7 @@ function checkIfInputIsValid(eventBody) {
 function register(eventBody) {
   return checkIfInputIsValid(eventBody) // validate input
     .then(() =>
-      User.findByEmail({ email: eventBody.email }) // check if user exists
+      User.findByEmail(eventBody.email) // check if user exists
     )
     .then(user =>
       user

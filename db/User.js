@@ -7,17 +7,15 @@ module.exports.create = async (user) => {
   await client.query('INSERT INTO User SET ?', user);
   client.quit();
 
-  console.log(user);
   return user;
 };
 
 module.exports.findByEmail = async (email) => {
   client = connectToDatabase();
-  let user = await client.query('SELECT * FROM User WHERE email = ?', email);
+  let user = await client.query('SELECT * FROM User WHERE email = ?', [email]);
   if (user.length == 0) {
     return null;
-  } 
+  }
 
-  console.log(user[0]);
   return user[0];
 };
