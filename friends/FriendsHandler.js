@@ -1,5 +1,5 @@
 const User = require('../db/User');
-const jwt = require('jsonwebtoken');
+const VerifyToken = require('../auth/VerifyToken');
 
 /**
  * Functions
@@ -12,7 +12,7 @@ module.exports.getFriends = async (event, context) => {
   context.callbackWaitsForEmptyEventLoop = false;
 
   const token = event.headers.Authorization;
-  const decoded = decodeJwt(token);
+  const decoded = VerifyToken.decodeJwt(token);
   if (!decoded) // token empty or invalid
     return { 
       statusCode: 403,
@@ -37,7 +37,7 @@ module.exports.getRequests = async (event, context) => {
   context.callbackWaitsForEmptyEventLoop = false;
 
   const token = event.headers.Authorization;
-  const decoded = decodeJwt(token);
+  const decoded = VerifyToken.decodeJwt(token);
   if (!decoded) // token empty or invalid
     return { 
       statusCode: 403,
@@ -62,7 +62,7 @@ module.exports.sendRequest = async (event, context) => {
   context.callbackWaitsForEmptyEventLoop = false;
 
   const token = event.headers.Authorization;
-  const decoded = decodeJwt(token);
+  const decoded = VerifyToken.decodeJwt(token);
   if (!decoded) // token empty or invalid
     return { 
       statusCode: 403,
@@ -87,7 +87,7 @@ module.exports.acceptRequest = async (event, context) => {
   context.callbackWaitsForEmptyEventLoop = false;
 
   const token = event.headers.Authorization;
-  const decoded = decodeJwt(token);
+  const decoded = VerifyToken.decodeJwt(token);
   if (!decoded) // token empty or invalid
     return { 
       statusCode: 403,
@@ -112,7 +112,7 @@ module.exports.declineRequest = async (event, context) => {
   context.callbackWaitsForEmptyEventLoop = false;
 
   const token = event.headers.Authorization;
-  const decoded = decodeJwt(token);
+  const decoded = VerifyToken.decodeJwt(token);
   if (!decoded) // token empty or invalid
   return { 
     statusCode: 403,
@@ -133,18 +133,6 @@ module.exports.declineRequest = async (event, context) => {
 /**
  * Helpers
  */
-
-function decodeJwt(token) {
-  console.log("decodeJwt");
-
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    return decoded;
-  } catch(err) {
-    console.error("decodeJwt error " + err);
-    return null;
-  }
-}
 
 function getFriends(id) {
   console.log("getFriends");

@@ -36,3 +36,13 @@ module.exports.auth = (event, context, callback) => {
   });
 
 };
+
+module.exports.decodeJwt = (token) => {
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    return decoded;
+  } catch(err) {
+    console.error("decodeJwt error " + err);
+    return null;
+  }
+}
