@@ -135,8 +135,6 @@ module.exports.declineRequest = async (event, context) => {
  */
 
 function getFriends(id) {
-  console.log("getFriends");
-
   return User.getFriends(id)
     .then(friends =>
       !friends
@@ -146,8 +144,6 @@ function getFriends(id) {
 }
 
 function getRequests(id) {
-  console.log("getRequest");
-  
   return User.getRequests(id)
     .then(requests => 
       !requests
@@ -157,8 +153,6 @@ function getRequests(id) {
 }
 
 function sendRequest(id, eventBody) {
-  console.log("sendRequest");
-
   return User.areFriends(id, eventBody.user_id) // check if somehow already friends
     .then(friended => {
       if (friended == null)
@@ -175,8 +169,6 @@ function sendRequest(id, eventBody) {
 }
 
 function acceptRequest(id, eventBody) {
-  console.log("acceptRequest");
-
   return User.hasRequested(id, eventBody.user_id) // check if request even exists
     .then(requested => {
       if (requested == null)
@@ -206,8 +198,6 @@ function acceptRequest(id, eventBody) {
 }
 
 function declineRequest(id, eventBody) {
-  console.log("declineRequest");
-
   return User.hasRequested(id, eventBody.user_id) // check if request even exists
     .then(requested => {
       if (requested == null)
