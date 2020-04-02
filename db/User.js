@@ -1,14 +1,13 @@
-const connectToDatabase = require('../db');
-const neo4j = require('../neo4j')
+const db = require('../db');
 const uuid = require('uuid');
 
 module.exports.create = async (user) => {
-  client = connectToDatabase();
+  client = db.connectMysql();
   user.user_id = uuid();
   await client.query('INSERT INTO User SET ?', user);
   client.quit();
 
-  const driver = await neo4j.connectDriver();
+  const driver = await db.connectNeo4j();
   const session = driver.session();
 
   try {
@@ -27,7 +26,7 @@ module.exports.create = async (user) => {
 };
 
 module.exports.findByEmail = async (email) => {
-  client = connectToDatabase();
+  client = db.connectMysql();
   let user = await client.query('SELECT * FROM User WHERE email = ?', email);
   if (user.length == 0) {
     return null;
@@ -38,7 +37,7 @@ module.exports.findByEmail = async (email) => {
 };
 
 module.exports.getFriends = async (id) => {
-  const driver = await neo4j.connectDriver();
+  const driver = await db.connectNeo4j();
   const session = driver.session();
 
   try {
@@ -57,7 +56,7 @@ module.exports.getFriends = async (id) => {
 }
 
 module.exports.areFriends = async (id1, id2) => {
-  const driver = await neo4j.connectDriver();
+  const driver = await db.connectNeo4j();
   const session = driver.session();
 
   try {
@@ -78,7 +77,7 @@ module.exports.areFriends = async (id1, id2) => {
 }
 
 module.exports.addFriend = async (id1, id2) => {
-  const driver = await neo4j.connectDriver();
+  const driver = await db.connectNeo4j();
   const session = driver.session();
 
   try {
@@ -99,7 +98,7 @@ module.exports.addFriend = async (id1, id2) => {
 }
 
 module.exports.getRequests = async (id) => {
-  const driver = await neo4j.connectDriver();
+  const driver = await db.connectNeo4j();
   const session = driver.session();
 
   try {
@@ -119,7 +118,7 @@ module.exports.getRequests = async (id) => {
 }
 
 module.exports.hasRequested = async (id1, id2) => {
-  const driver = await neo4j.connectDriver();
+  const driver = await db.connectNeo4j();
   const session = driver.session();
 
   try {
@@ -141,7 +140,7 @@ module.exports.hasRequested = async (id1, id2) => {
 
 // Create request from id1 to id2
 module.exports.createRequest = async (id1, id2) => {
-  const driver = await neo4j.connectDriver();
+  const driver = await db.connectNeo4j();
   const session = driver.session();
 
   try {
@@ -163,7 +162,7 @@ module.exports.createRequest = async (id1, id2) => {
 
 // Delete request BETWEEN (directionless) id1 and i2
 module.exports.deleteRequest = async (id1, id2) => {
-  const driver = await neo4j.connectDriver();
+  const driver = await db.connectNeo4j();
   const session = driver.session();
 
   try {
