@@ -15,24 +15,22 @@ module.exports.create = async (user) => {
   } catch (error) {
     console.error("Neo4j: " + error);
     // TODO: undo MySQL transaction and proper error handling in invoker (i.e. when this returns null)
-    // return null;
+    return null;
   } finally {
     await session.close();
     await driver.close();
   }
 
-  console.log(user);
   return user;
 };
 
 module.exports.findByEmail = async (email) => {
-  client = db.connectMysql();
-  let user = await client.query('SELECT * FROM User WHERE email = ?', email);
+  const client = db.connectMysql();
+  let user = await client.query('SELECT * FROM User WHERE email = ?', [email]);
   if (user.length == 0) {
     return null;
-  } 
+  }
 
-  console.log(user[0]);
   return user[0];
 };
 
