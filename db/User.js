@@ -2,7 +2,7 @@ const db = require('../db');
 const uuid = require('uuid');
 
 module.exports.create = async (user) => {
-  client = db.connectMysql();
+  const client = db.connectMysql();
   user.user_id = uuid();
   await client.query('INSERT INTO User SET ?', user);
   client.quit();
