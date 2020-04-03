@@ -24,11 +24,9 @@ module.exports.findByEmail = async (email) => {
 
 module.exports.findByUsername = async (username) => {
   client = connectToDatabase();
-  let user = await client.query('SELECT * FROM User WHERE username = ?', username);
+  let user = await client.query('SELECT * FROM User WHERE username = ?', [username]);
   if (user.length == 0) {
     return null;
   }
-
-  // console.log(user[0]);
-  return await user[0];
+  return user[0];
 };

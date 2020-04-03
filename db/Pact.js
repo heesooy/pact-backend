@@ -19,12 +19,18 @@ module.exports.deletePact = async (pact) => {
   return pact;
 };
 
-module.exports.addPartcipantToPact = async (participant) => {
+module.exports.addPartcipantsToPact = async (pact_info) => {
   client = connectToDatabase();
-  await client.query('INSERT INTO PactParticipants SET ?', participant);
+  let participant = {};
+  participant.pact_id = pact_info.pact_id;
+  console.log(pact_info.users);
+  for (let i = 0; i < pact_info.users.length; i++) {
+    participant.user_id = pact_info.users[i];
+    await client.query('INSERT INTO PactParticipants SET ?', participant);
+  }
   client.quit();
-  console.log(participant);
-  return participant;
+  console.log(pact_info);
+  return pact_info;
 };
 
 module.exports.findPact = async (pact_id) => {
