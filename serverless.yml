@@ -38,6 +38,31 @@ functions:
           method: post
           cors: true
 
+  # pacts
+  createPact:
+    handler: pact/PactHandler.createPact
+    events:
+      - http:
+          path: createPact
+          method: post
+          cors: true
+
+  deletePact:
+    handler: pact/PactHandler.deletePact
+    events:
+      - http:
+          path: deletePact
+          method: delete
+          cors: true
+
+  updatePact:
+    handler: pact/PactHandler.updatePact
+    events:
+      - http:
+          path: updatePact
+          method: put
+          cors: true
+
   # friends 
   get-friends:
     handler: friends/FriendsHandler.getFriends

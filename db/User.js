@@ -34,6 +34,15 @@ module.exports.findByEmail = async (email) => {
   return user[0];
 };
 
+module.exports.findByUsername = async (username) => {
+  client = connectToDatabase();
+  let user = await client.query('SELECT * FROM User WHERE username = ?', [username]);
+  if (user.length == 0) {
+    return null;
+  }
+  return user[0];
+};
+
 module.exports.getFriends = async (id) => {
   const driver = await db.connectNeo4j();
   const session = driver.session();
