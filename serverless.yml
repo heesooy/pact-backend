@@ -14,11 +14,14 @@ provider:
     DB_USER: ${self:custom.secrets.DB_USER}
     DB_PASSWORD: ${self:custom.secrets.DB_PASSWORD}
     DB: ${self:custom.secrets.DB}
+    NEO4J_HOST: ${self:custom.secrets.NEO4J_HOST}
+    NEO4J_USER: ${self:custom.secrets.NEO4J_USER}
+    NEO4J_PASSWORD: ${self:custom.secrets.NEO4J_PASSWORD}
 
 functions:
   verify-token:
     handler: auth/VerifyToken.auth
-
+  
   login:
     handler: auth/AuthHandler.login
     events:
@@ -35,6 +38,7 @@ functions:
           method: post
           cors: true
 
+  # pacts
   createPact:
     handler: pact/PactHandler.createPact
     events:
@@ -57,6 +61,47 @@ functions:
       - http:
           path: updatePact
           method: put
+          cors: true
+
+  # friends 
+  get-friends:
+    handler: friends/FriendsHandler.getFriends
+    events:
+      - http:
+          path: friends
+          method: get
+          cors: true
+  
+  get-requests:
+    handler: friends/FriendsHandler.getRequests
+    events:
+      - http:
+          path: friends/request
+          method: get
+          cors: true
+
+  send-request:
+    handler: friends/FriendsHandler.sendRequest
+    events:
+      - http:
+          path: friends/request/send
+          method: post
+          cors: true     
+
+  accept-request:
+    handler: friends/FriendsHandler.acceptRequest
+    events:
+      - http:
+          path: friends/request/accept
+          method: post
+          cors: true
+
+  decline-request:
+    handler: friends/FriendsHandler.declineRequest
+    events:
+      - http:
+          path: friends/request/decline
+          method: post
           cors: true
 
 plugins:
