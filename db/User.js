@@ -34,8 +34,17 @@ module.exports.findByEmail = async (email) => {
   return user[0];
 };
 
+module.exports.findByUserID = async (user_id) => {
+  const client = db.connectMysql();
+  let user = await client.query('SELECT * FROM User WHERE user_id = ?', [user_id]);
+  if (user.length == 0) {
+    return null;
+  }
+  return user[0];
+};
+
 module.exports.findByUsername = async (username) => {
-  client = connectToDatabase();
+  const client = db.connectMysql();
   let user = await client.query('SELECT * FROM User WHERE username = ?', [username]);
   if (user.length == 0) {
     return null;
