@@ -1,5 +1,6 @@
 const User = require('../db/User');
 const VerifyToken = require('../auth/VerifyToken');
+const HTTPError = require('../common/HTTPError');
 
 /**
  * Functions
@@ -26,7 +27,7 @@ module.exports.getFriends = async (event, context) => {
     }))
     .catch(err => ({
       statusCode: err.statusCode || 500,
-      body: JSON.stringify({ stack: err.stack, message: err.message })
+      body: JSON.stringify({ message: err.message })
     }));
 };
 
@@ -51,7 +52,7 @@ module.exports.getRequests = async (event, context) => {
     }))
     .catch(err => ({
       statusCode: err.statusCode || 500,
-      body: JSON.stringify({ stack: err.stack, message: err.message })
+      body: JSON.stringify({ message: err.message })
     }));
 };
 
@@ -76,7 +77,7 @@ module.exports.sendRequest = async (event, context) => {
     }))
     .catch(err => ({
       statusCode: err.statusCode || 500,
-      body: JSON.stringify({ stack: err.stack, message: err.message })
+      body: JSON.stringify({ message: err.message })
     }));
 };
 
@@ -101,7 +102,7 @@ module.exports.acceptRequest = async (event, context) => {
     }))
     .catch(err => ({
       statusCode: err.statusCode || 500,
-      body: JSON.stringify({ stack: err.stack, message: err.message })
+      body: JSON.stringify({ message: err.message })
     }));
 };
 
@@ -126,7 +127,7 @@ module.exports.declineRequest = async (event, context) => {
     }))
     .catch(err => ({
       statusCode: err.statusCode || 500,
-      body: JSON.stringify({ stack: err.stack, message: err.message })
+      body: JSON.stringify({ message: err.message })
     }));
 };
 
@@ -138,7 +139,7 @@ function getFriends(id) {
   return User.getFriends(id)
     .then(friends =>
       !friends
-        ? Promise.reject(new Error('Error fetching friends.'))
+        ? Promise.reject(HTTPError(500, 'Error fetching friends.'))
         : ({ friends: friends })
     );
 }
@@ -147,7 +148,7 @@ function getRequests(id) {
   return User.getRequests(id)
     .then(requests => 
       !requests
-        ? Promise.reject(new Error('Error fetching friend requests.'))
+        ? Promise.reject(HTTPError(500, 'Error fetching friend requests.'))
         : ({ requests: requests })
     );
 }
@@ -156,14 +157,14 @@ function sendRequest(id, eventBody) {
   return User.areFriends(id, eventBody.user_id) // check if somehow already friends
     .then(friended => {
       if (friended == null)
-        return Promise.reject(new Error('Error checking if already friends.'));
+        return Promise.reject(HTTPError(500, 'Error checking if already friends.'));
       if (friended == true)
-        return Promise.reject(new Error('Users are already friends.'));
+        return Promise.reject(HTTPError(409, 'Users are already friends.'));
     }).then(() => 
       User.createRequest(id, eventBody.user_id) // create 'REQUESTED' relationship
     ).then(success => 
       !success
-        ? Promise.reject(new Error('Error fetching friend requests.'))
+        ? Promise.reject(HTTPError(500, 'Error fetching friend requests.'))
         : eventBody
     );
 }
@@ -172,27 +173,27 @@ function acceptRequest(id, eventBody) {
   return User.hasRequested(id, eventBody.user_id) // check if request even exists
     .then(requested => {
       if (requested == null)
-        return Promise.reject(new Error('Error checking if friend request exists.'));
+        return Promise.reject(HTTPError(500, 'Error checking if friend request exists.'));
       if (requested == false)
-        return Promise.reject(new Error('User has not received friend request.'));
+        return Promise.reject(HTTPError(409, 'User has not received friend request.'));
     }).then(() => 
       User.areFriends(id, eventBody.user_id) // check if somehow already friends
     ).then(friended => {
       if (friended == null)
-        return Promise.reject(new Error('Error checking if already friends.'));
+        return Promise.reject(HTTPError(500, 'Error checking if already friends.'));
       if (friended == true)
-        return Promise.reject(new Error('Users are already friends.'));
+        return Promise.reject(HTTPError(409, 'Users are already friends.'));
     }).then(() =>
       User.deleteRequest(id, eventBody.user_id) // delete 'REQUESTED' relationship
     ).then(success => 
       !success
-        ? Promise.reject(new Error('Error deleting friend request.'))
+        ? Promise.reject(HTTPError(500, 'Error deleting friend request.'))
         : eventBody
     ).then(() => 
       User.addFriend(id, eventBody.user_id) // replace with 'FRIENDS' relationship
     ).then(success =>
       !success
-        ? Promise.reject(new Error('Error adding friend.'))
+        ? Promise.reject(HTTPError(500, 'Error adding friend.'))
         : eventBody
     );
 }
@@ -201,21 +202,21 @@ function declineRequest(id, eventBody) {
   return User.hasRequested(id, eventBody.user_id) // check if request even exists
     .then(requested => {
       if (requested == null)
-        return Promise.reject(new Error('Error checking if friend request exists.'));
+        return Promise.reject(HTTPError(500, 'Error checking if friend request exists.'));
       if (requested == false)
-        return Promise.reject(new Error('User has not received friend request.'));
+        return Promise.reject(HTTPError(409, 'User has not received friend request.'));
     }).then(() => 
       User.areFriends(id, eventBody.user_id) // check if somehow already friends
     ).then(friended => {
       if (friended == null)
-        return Promise.reject(new Error('Error checking if already friends.'));
+        return Promise.reject(HTTPError(500, 'Error checking if already friends.'));
       if (friended == true)
-        return Promise.reject(new Error('Users are already friends.'));
+        return Promise.reject(HTTPError(409, 'Users are already friends.'));
     }).then(() => 
       User.deleteRequest(id, eventBody.user_id) // delete 'REQUESTED' relationship
     ).then(success => 
       !success
-        ? Promise.reject(new Error('Error deleting friend request.'))
+        ? Promise.reject(HTTPError(500, 'Error deleting friend request.'))
         : eventBody
     );
 }

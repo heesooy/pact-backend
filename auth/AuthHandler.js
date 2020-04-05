@@ -1,41 +1,38 @@
 const User = require('../db/User');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs-then');
+const HTTPError = require('../common/HTTPError');
 
 /* 
  * Functions
  */
 
-module.exports.login = async (event, context, callback) => {
+module.exports.login = async (event, context) => {
   context.callbackWaitsForEmptyEventLoop = false;
-  let response = await login(JSON.parse(event.body))
+
+  return await login(JSON.parse(event.body))
     .then(session => ({
       statusCode: 200,
       body: JSON.stringify(session)
     }))
     .catch(err => ({
       statusCode: err.statusCode || 500,
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({ stack: err.stack, message: err.message })
-    }));
-
-    callback(null, response);
-};
-
-module.exports.register = async (event, context, callback) => {
-  context.callbackWaitsForEmptyEventLoop = false;
-  let response = await register(JSON.parse(event.body))
-    .then(session => ({
-      statusCode: 200,
-      body: JSON.stringify(session)
-    }))
-    .catch(err => ({
-      statusCode: err.statusCode || 500,
-      headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({ message: err.message })
     }));
+};
 
-    callback(null, response);
+module.exports.register = async (event, context) => {
+  context.callbackWaitsForEmptyEventLoop = false;
+
+  return await register(JSON.parse(event.body))
+    .then(session => ({
+      statusCode: 200,
+      body: JSON.stringify(session)
+    }))
+    .catch(err => ({
+      statusCode: err.statusCode || 500,
+      body: JSON.stringify({ message: err.message })
+    }));
 };
 
 /**
@@ -53,19 +50,19 @@ function checkIfInputIsValid(eventBody) {
     !(eventBody.password &&
       eventBody.password.length >= 8)
   ) {
-    return Promise.reject(new Error('Password error. Password needs to be at least 8 characters.'));
+    return Promise.reject(HTTPError(400, 'Password error. Password needs to be at least 8 characters.'));
   }
 
   if (
     !(eventBody.username &&
       eventBody.username.length > 5 &&
       typeof eventBody.username === 'string')
-  ) return Promise.reject(new Error('Username error. Username needs to be longer than 5 characters'));
+  ) return Promise.reject(HTTPError(400, 'Username error. Username needs to be longer than 5 characters'));
 
   if (
     !(eventBody.email &&
       typeof eventBody.email === 'string')
-  ) return Promise.reject(new Error('Email error. Email must have valid characters.'));
+  ) return Promise.reject(HTTPError(400, 'Email error. Email must have valid characters.'));
 
   return Promise.resolve();
 }
@@ -77,7 +74,7 @@ function register(eventBody) {
     )
     .then(user =>
       user
-        ? Promise.reject(new Error('User with that email exists.'))
+        ? Promise.reject(HTTPError(409, 'User with that email exists.'))
         : bcrypt.hash(eventBody.password, 8) // hash the pass
     )
     .then(hash =>
@@ -90,7 +87,7 @@ function login(eventBody) {
   return User.findByEmail(eventBody.email)
     .then(user =>
       !user
-        ? Promise.reject(new Error('User with that email does not exits.'))
+        ? Promise.reject(HTTPError(403, 'User with that email does not exist.'))
         : comparePassword(eventBody.password, user.password, user.user_id)
     )
     .then(token => ({ auth: true, token: token }));
@@ -101,7 +98,7 @@ function comparePassword(eventPassword, userPassword, userId) {
     .then(passwordIsValid => {
       console.log(passwordIsValid)
       return !passwordIsValid
-        ? Promise.reject(new Error('The credentials do not match.'))
+        ? Promise.reject(HTTPError(403, 'The credentials do not match.'))
         : signToken(userId)
     });
 }
