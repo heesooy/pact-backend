@@ -58,6 +58,18 @@ module.exports.findByUsername = async (username) => {
   return user[0];
 };
 
+module.exports.findUsersByPrefix = async (prefix, limit) => {
+  const client = db.connectMysql();
+  const regex = prefix + "%";
+  let users = await client.query(
+    'SELECT user_id, username, firstname, lastname, email, location\
+    FROM User WHERE username LIKE ? OR firstname LIKE ? LIMIT ?',
+    [regex, regex, limit]
+  );
+  client.quit();
+  return users;
+}
+
 module.exports.getFriendsIds = async (id) => {
   const driver = await db.connectNeo4j();
   const session = driver.session();
