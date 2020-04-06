@@ -43,7 +43,7 @@ functions:
     handler: pact/PactHandler.getUserPacts
     events:
       - http:
-          path: getUserPacts
+          path: getuserpacts
           method: get
           cors: true
 
@@ -51,7 +51,7 @@ functions:
     handler: pact/PactHandler.getPactInfo
     events:
       - http:
-          path: getPactInfo
+          path: getpactinfo
           method: get
           cors: true
 
@@ -59,7 +59,7 @@ functions:
     handler: pact/PactHandler.createPact
     events:
       - http:
-          path: createPact
+          path: createpact
           method: post
           cors: true
 
@@ -67,7 +67,7 @@ functions:
     handler: pact/PactHandler.deletePact
     events:
       - http:
-          path: deletePact
+          path: deletepact
           method: delete
           cors: true
 
@@ -75,7 +75,7 @@ functions:
     handler: pact/PactHandler.updatePact
     events:
       - http:
-          path: updatePact
+          path: updatepact
           method: put
           cors: true
 
