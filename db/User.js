@@ -58,7 +58,7 @@ module.exports.findByUsername = async (username) => {
   return user[0];
 };
 
-module.exports.getFriends = async (id) => {
+module.exports.getFriendsIds = async (id) => {
   const driver = await db.connectNeo4j();
   const session = driver.session();
 
@@ -75,6 +75,26 @@ module.exports.getFriends = async (id) => {
     await session.close();
     await driver.close();
   }
+}
+
+module.exports.getUsersDetails = async (user_ids) => {
+  const client = db.connectMysql();
+  let details = await client.query(
+    'SELECT user_id, username, firstname, lastname, email, location FROM User WHERE user_id IN (?)',
+    [user_ids]
+  );
+  client.quit();
+  return details;
+}
+
+module.exports.getFriends = async (id) => {
+  const friend_ids = await this.getFriendsIds(id);
+  if (friend_ids == null)
+    return null;
+  if (friend_ids.length == 0)
+    return friend_ids;
+
+  return await this.getUsersDetails(friend_ids);
 }
 
 module.exports.areFriends = async (id1, id2) => {
