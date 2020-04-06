@@ -27,6 +27,8 @@ module.exports.create = async (user) => {
 module.exports.findByEmail = async (email) => {
   const client = db.connectMysql();
   let user = await client.query('SELECT * FROM User WHERE email = ?', [email]);
+  client.quit();
+
   if (user.length == 0) {
     return null;
   }
@@ -37,6 +39,8 @@ module.exports.findByEmail = async (email) => {
 module.exports.findByUserID = async (user_id) => {
   const client = db.connectMysql();
   let user = await client.query('SELECT * FROM User WHERE user_id = ?', [user_id]);
+  client.quit();
+  
   if (user.length == 0) {
     return null;
   }
@@ -46,6 +50,8 @@ module.exports.findByUserID = async (user_id) => {
 module.exports.findByUsername = async (username) => {
   const client = db.connectMysql();
   let user = await client.query('SELECT * FROM User WHERE username = ?', [username]);
+  client.quit();
+  
   if (user.length == 0) {
     return null;
   }

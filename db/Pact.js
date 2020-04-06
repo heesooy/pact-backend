@@ -36,6 +36,8 @@ module.exports.addPartcipantsToPact = async (pact_info) => {
 module.exports.findPact = async (pact_id) => {
   const client = db.connectMysql();
   let pact = await client.query('SELECT * FROM Pact WHERE pact_id = ?', pact_id);
+  client.quit();
+
   if (pact.length == 0) {
     return null;
   }
@@ -45,6 +47,8 @@ module.exports.findPact = async (pact_id) => {
 module.exports.getPactParticipants = async (pact_id) => {
   const client = db.connectMysql();
   let participants = await client.query('SELECT * FROM PactParticipants WHERE pact_id = ?', pact_id);
+  client.quit();
+
   if (participants.length == 0) {
     return null;
   }
@@ -54,6 +58,8 @@ module.exports.getPactParticipants = async (pact_id) => {
 module.exports.getUsersPactIDs = async (user_id) => {
   const client = db.connectMysql();
   let pacts = await client.query('SELECT pact_id FROM PactParticipants WHERE user_id = ?', user_id);
+  client.quit();
+  
   if (pacts.length == 0) {
     return null;
   }
