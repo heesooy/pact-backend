@@ -21,7 +21,7 @@ provider:
 functions:
   verify-token:
     handler: auth/VerifyToken.auth
-  
+
   login:
     handler: auth/AuthHandler.login
     events:
@@ -39,6 +39,22 @@ functions:
           cors: true
 
   # pacts
+  getUserPacts:
+    handler: pact/PactHandler.getUserPacts
+    events:
+      - http:
+          path: getUserPacts
+          method: get
+          cors: true
+
+  getPactInfo:
+    handler: pact/PactHandler.getPactInfo
+    events:
+      - http:
+          path: getPactInfo
+          method: get
+          cors: true
+
   createPact:
     handler: pact/PactHandler.createPact
     events:
@@ -63,7 +79,7 @@ functions:
           method: put
           cors: true
 
-  # friends 
+  # friends
   get-friends:
     handler: friends/FriendsHandler.getFriends
     events:
@@ -71,7 +87,7 @@ functions:
           path: friends
           method: get
           cors: true
-  
+
   get-requests:
     handler: friends/FriendsHandler.getRequests
     events:
@@ -86,7 +102,7 @@ functions:
       - http:
           path: friends/request/send
           method: post
-          cors: true     
+          cors: true
 
   accept-request:
     handler: friends/FriendsHandler.acceptRequest
