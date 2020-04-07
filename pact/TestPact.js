@@ -1,6 +1,6 @@
 const Pact = require('./PactHandler');
 
-Pact.createPact({body: "{\"title\": \"Workout Pact\",\"description\": \"Workout 5 times a Week\",\"streak\": 20,\"period_length\": 7,\"period_target\": 5,\"privacy_level\": \"private\",\"participants\": [\"charans2\", \"asdale2\"]}"}, {})
+Pact.getPactInfo({headers: "{pact_id: \"7d920e7f-8a13-470e-ab17-92c6610b7cda\"}"}, {})
   .then((res) => console.log(res));
 
 // Pact.deletePact({body: "{\"pact_id\": \"a2db2381-bcde-4245-ae8c-5c020db216b4\"}"}, {})

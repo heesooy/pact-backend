@@ -151,7 +151,8 @@ function getPactInfo(pact_id) {
 
 async function addPactTitles(pact_ids) {
   for (let i = 0; i < pact_ids.length; i++) {
-    pact_ids[i].title = (await Pact.findPact(pact_ids[i].pact_id)).title;
+    pact_ids[i] = await Pact.findPact(pact_ids[i].pact_id);
+    pact_ids[i] = await addPactParticipantInfo(pact_ids[i]);
   }
   return pact_ids;
 }
