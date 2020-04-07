@@ -120,5 +120,18 @@ functions:
           method: post
           cors: true
 
+  search-users:
+    handler: friends/FriendsHandler.searchUsers
+    events:
+      - http:
+          path: friends/search
+          method: get
+          cors: true
+          request:
+            parameters:
+              querystrings:
+                prefix: true
+                limit: false
+
 plugins:
   - serverless-offline
