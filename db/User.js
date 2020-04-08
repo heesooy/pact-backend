@@ -40,7 +40,7 @@ module.exports.findByUserID = async (user_id) => {
   const client = db.connectMysql();
   let user = await client.query('SELECT * FROM User WHERE user_id = ?', [user_id]);
   client.quit();
-  
+
   if (user.length == 0) {
     return null;
   }
@@ -51,7 +51,7 @@ module.exports.findByUsername = async (username) => {
   const client = db.connectMysql();
   let user = await client.query('SELECT * FROM User WHERE username = ?', [username]);
   client.quit();
-  
+
   if (user.length == 0) {
     return null;
   }
@@ -151,7 +151,7 @@ module.exports.addFriend = async (id1, id2) => {
   }
 }
 
-module.exports.getRequests = async (id) => {
+module.exports.getRequestsIds = async (id) => {
   const driver = await db.connectNeo4j();
   const session = driver.session();
 
@@ -169,6 +169,15 @@ module.exports.getRequests = async (id) => {
     await session.close();
     await driver.close();
   }
+}
+
+module.exports.getRequests = async (id) => {
+  const request_ids = await this.getRequestsIds(id);
+  if (request_ids == null)
+    return null;
+  if (request_ids.length == 0)
+    return request_ids;
+  return await this.getUsersDetails(request_ids);
 }
 
 module.exports.hasRequested = async (id1, id2) => {
