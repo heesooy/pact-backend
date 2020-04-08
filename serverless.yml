@@ -79,6 +79,22 @@ functions:
           method: put
           cors: true
 
+  acceptPact:
+    handler: pact/PactHandler.acceptPact
+    events:
+      - http:
+          path: acceptpact
+          method: put
+          cors: true
+
+  declinePact:
+    handler: pact/PactHandler.declinePact
+    events:
+      - http:
+          path: declinepact
+          method: put
+          cors: true
+
   # friends
   get-friends:
     handler: friends/FriendsHandler.getFriends
