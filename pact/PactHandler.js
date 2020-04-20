@@ -230,7 +230,7 @@ async function checkUsernameInput(eventBody) {
 function checkPactExists(pact_id) {
   return Pact.findPact(pact_id).then((pact) => {
     if (pact == null)
-      return Promise.reject(new Error('Pact error. Pact does not exist.'));
+      return Promise.reject(HTTPError(404, 'Pact error. Pact does not exist.'));
     return Promise.resolve();
   })
 }
@@ -238,7 +238,7 @@ function checkPactExists(pact_id) {
 function checkUserExists(user_id) {
   return User.findByUserID(user_id).then((user) => {
     if (user == null)
-      return Promise.reject(new Error('User error. User does not exist.'));
+      return Promise.reject(HTTPError(404, 'User error. User does not exist.'));
     return Promise.resolve();
   })
 }
@@ -290,7 +290,7 @@ async function addPactInfo(pact_ids, user_id) {
 function checkUserPactRequest(pact_id, user_id) {
   return Pact.getUserPactStatus(pact_id, user_id).then((res) => {
     if (res != "requested")
-      return Promise.reject(new Error('Status error. User not in Pact or Status is not Requested.'));
+      return Promise.reject(HTTPError(404, 'Status error. User not in Pact or Status is not Requested.'));
     return Promise.resolve();
   })
 }
