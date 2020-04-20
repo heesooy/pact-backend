@@ -370,6 +370,9 @@ function deletePact(eventBody, user_id) {
       checkUserExists(user_id)
     )
     .then(() =>
+      checkUserInPact(user_id, eventBody.pact_id)
+    )
+    .then(() =>
       Pact.deletePact({ pact_id: eventBody.pact_id })
     )
 }
@@ -381,6 +384,9 @@ function updatePact(eventBody, user_id) {
     )
     .then(() =>
       checkUserExists(user_id)
+    )
+    .then(() =>
+      checkUserInPact(user_id, eventBody.pact_id)
     )
     .then(() =>
       checkUsernameInput(eventBody)
