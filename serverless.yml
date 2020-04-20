@@ -79,6 +79,22 @@ functions:
           method: put
           cors: true
 
+  checkIn:
+    handler: pact/PactHandler.checkIn
+    events:
+      - http:
+          path: pact/checkin
+          method: post
+          cors: true
+
+  getCheckIns:
+    handler: pact/PactHandler.getCheckIns
+    events:
+      - http:
+          path: pact/getcheckins
+          method: post
+          cors: true
+
   # friends
   get-friends:
     handler: friends/FriendsHandler.getFriends
