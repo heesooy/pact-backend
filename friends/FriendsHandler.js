@@ -15,7 +15,7 @@ module.exports.getFriends = async (event, context) => {
   const token = event.headers.Authorization;
   const decoded = VerifyToken.decodeJwt(token);
   if (!decoded) // token empty or invalid
-    return { 
+    return {
       statusCode: 403,
       body: JSON.stringify({ message: 'Forbidden: missing or invalid JWT.'  })
     };
@@ -40,11 +40,11 @@ module.exports.getRequests = async (event, context) => {
   const token = event.headers.Authorization;
   const decoded = VerifyToken.decodeJwt(token);
   if (!decoded) // token empty or invalid
-    return { 
+    return {
       statusCode: 403,
       body: JSON.stringify({ message: 'Forbidden: missing or invalid JWT.'  })
     };
-  
+
   return await getRequests(decoded.id)
     .then(resp => ({
       statusCode: 200,
@@ -65,7 +65,7 @@ module.exports.sendRequest = async (event, context) => {
   const token = event.headers.Authorization;
   const decoded = VerifyToken.decodeJwt(token);
   if (!decoded) // token empty or invalid
-    return { 
+    return {
       statusCode: 403,
       body: JSON.stringify({ message: 'Forbidden: missing or invalid JWT.'  })
     };
@@ -90,7 +90,7 @@ module.exports.acceptRequest = async (event, context) => {
   const token = event.headers.Authorization;
   const decoded = VerifyToken.decodeJwt(token);
   if (!decoded) // token empty or invalid
-    return { 
+    return {
       statusCode: 403,
       body: JSON.stringify({ message: 'Forbidden: missing or invalid JWT.'  })
     };
@@ -115,7 +115,7 @@ module.exports.declineRequest = async (event, context) => {
   const token = event.headers.Authorization;
   const decoded = VerifyToken.decodeJwt(token);
   if (!decoded) // token empty or invalid
-  return { 
+  return {
     statusCode: 403,
     body: JSON.stringify({ message: 'Forbidden: missing or invalid JWT.'  })
   };
@@ -141,7 +141,7 @@ module.exports.searchUsers = async (event, context) => {
   const token = event.headers.Authorization;
   const decoded = VerifyToken.decodeJwt(token);
   if (!decoded) // token empty or invalid
-  return { 
+  return {
     statusCode: 403,
     body: JSON.stringify({ message: 'Forbidden: missing or invalid JWT.'  })
   };
@@ -175,7 +175,7 @@ function getFriends(id) {
 
 function getRequests(id) {
   return User.getRequests(id)
-    .then(requests => 
+    .then(requests =>
       !requests
         ? Promise.reject(HTTPError(500, 'Error fetching friend requests.'))
         : ({ requests: requests })
@@ -189,9 +189,9 @@ function sendRequest(id, eventBody) {
         return Promise.reject(HTTPError(500, 'Error checking if already friends.'));
       if (friended == true)
         return Promise.reject(HTTPError(409, 'Users are already friends.'));
-    }).then(() => 
+    }).then(() =>
       User.createRequest(id, eventBody.user_id) // create 'REQUESTED' relationship
-    ).then(success => 
+    ).then(success =>
       !success
         ? Promise.reject(HTTPError(500, 'Error fetching friend requests.'))
         : eventBody
@@ -205,7 +205,7 @@ function acceptRequest(id, eventBody) {
         return Promise.reject(HTTPError(500, 'Error checking if friend request exists.'));
       if (requested == false)
         return Promise.reject(HTTPError(409, 'User has not received friend request.'));
-    }).then(() => 
+    }).then(() =>
       User.areFriends(id, eventBody.user_id) // check if somehow already friends
     ).then(friended => {
       if (friended == null)
@@ -214,11 +214,11 @@ function acceptRequest(id, eventBody) {
         return Promise.reject(HTTPError(409, 'Users are already friends.'));
     }).then(() =>
       User.deleteRequest(id, eventBody.user_id) // delete 'REQUESTED' relationship
-    ).then(success => 
+    ).then(success =>
       !success
         ? Promise.reject(HTTPError(500, 'Error deleting friend request.'))
         : eventBody
-    ).then(() => 
+    ).then(() =>
       User.addFriend(id, eventBody.user_id) // replace with 'FRIENDS' relationship
     ).then(success =>
       !success
@@ -234,16 +234,16 @@ function declineRequest(id, eventBody) {
         return Promise.reject(HTTPError(500, 'Error checking if friend request exists.'));
       if (requested == false)
         return Promise.reject(HTTPError(409, 'User has not received friend request.'));
-    }).then(() => 
+    }).then(() =>
       User.areFriends(id, eventBody.user_id) // check if somehow already friends
     ).then(friended => {
       if (friended == null)
         return Promise.reject(HTTPError(500, 'Error checking if already friends.'));
       if (friended == true)
         return Promise.reject(HTTPError(409, 'Users are already friends.'));
-    }).then(() => 
+    }).then(() =>
       User.deleteRequest(id, eventBody.user_id) // delete 'REQUESTED' relationship
-    ).then(success => 
+    ).then(success =>
       !success
         ? Promise.reject(HTTPError(500, 'Error deleting friend request.'))
         : eventBody
