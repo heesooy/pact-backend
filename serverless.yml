@@ -93,6 +93,21 @@ functions:
       - http:
           path: pact/getcheckins
           method: post
+
+  acceptPact:
+    handler: pact/PactHandler.acceptPact
+    events:
+      - http:
+          path: acceptpact
+          method: put
+          cors: true
+
+  declinePact:
+    handler: pact/PactHandler.declinePact
+    events:
+      - http:
+          path: declinepact
+          method: put
           cors: true
 
   # friends
