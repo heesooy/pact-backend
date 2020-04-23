@@ -1,7 +1,12 @@
 const Pact = require('../db/Pact');
 const User = require('../db/User');
+const CheckIn = require('../db/CheckIn');
 const VerifyToken = require('../auth/VerifyToken');
 const HTTPError = require('../common/HTTPError');
+
+/**
+ * Endpoints
+ */
 
 module.exports.getPactInfo = (event, context) => {
   context.callbackWaitsForEmptyEventLoop = false;
@@ -137,6 +142,63 @@ module.exports.declinePact = (event, context) => {
     }));
 };
 
+/**
+ * Get all checkins for given pact_id
+ */
+module.exports.getCheckIns = (event, context) => {
+  context.callbackWaitsForEmptyEventLoop = false;
+
+  const token = event.headers.Authorization;
+  const decoded = VerifyToken.decodeJwt(token);
+  if (!decoded) // token empty or invalid
+    return {
+      statusCode: 403,
+      body: JSON.stringify({ message: 'Forbidden: missing or invalid JWT.'  })
+    };
+
+  const pact_id = JSON.parse(event.body).pact_id;
+
+  return getCheckIns(pact_id, decoded.id)
+    .then(resp => ({
+      statusCode: 200,
+      body: JSON.stringify(resp)
+    }))
+    .catch(err => ({
+      statusCode: err.statusCode || 500,
+      body: JSON.stringify({ message: err.message })
+    }));
+};
+
+/**
+ * Add a new check-in to the pact for provided user
+ */
+module.exports.checkIn = (event, context) => {
+  context.callbackWaitsForEmptyEventLoop = false;
+
+  const token = event.headers.Authorization;
+  const decoded = VerifyToken.decodeJwt(token);
+  if (!decoded) // token empty or invalid
+    return {
+      statusCode: 403,
+      body: JSON.stringify({ message: 'Forbidden: missing or invalid JWT.'  })
+    };
+
+  return checkIn(JSON.parse(event.body), decoded.id)
+    .then(resp => ({
+      statusCode: 200,
+      body: JSON.stringify(resp)
+    }))
+    .catch(err => ({
+      statusCode: err.statusCode || 500,
+      body: JSON.stringify({ message: err.message })
+    }));
+};
+
+
+/**
+ * Helpers
+ */
+
 function checkPactInput(eventBody) {
   if (!(eventBody.title && typeof eventBody.title === 'string')) {
     return Promise.reject(HTTPError(400, 'Title error. Title must have valid characters.'));
@@ -168,7 +230,7 @@ async function checkUsernameInput(eventBody) {
 function checkPactExists(pact_id) {
   return Pact.findPact(pact_id).then((pact) => {
     if (pact == null)
-      return Promise.reject(new Error('Pact error. Pact does not exist.'));
+      return Promise.reject(HTTPError(404, 'Pact error. Pact does not exist.'));
     return Promise.resolve();
   })
 }
@@ -176,9 +238,21 @@ function checkPactExists(pact_id) {
 function checkUserExists(user_id) {
   return User.findByUserID(user_id).then((user) => {
     if (user == null)
-      return Promise.reject(new Error('User error. User does not exist.'));
+      return Promise.reject(HTTPError(404, 'User error. User does not exist.'));
     return Promise.resolve();
   })
+}
+
+function checkUserInPact(user_id, pact_id) {
+  return Pact.getPactParticipants(pact_id)
+    .then(list => {
+      for (let i = 0; i < list.length; i++) {
+        const row = list[i];
+        if (row.user_id == user_id && (row.status == 'accepted' || row.status == 'created'))
+          return Promise.resolve();
+      }
+      return Promise.reject(HTTPError(403, 'User is not part of the specified pact.'));
+    });
 }
 
 async function addPactParticipants(res, users, user_id) {
@@ -216,7 +290,7 @@ async function addPactInfo(pact_ids, user_id) {
 function checkUserPactRequest(pact_id, user_id) {
   return Pact.getUserPactStatus(pact_id, user_id).then((res) => {
     if (res != "requested")
-      return Promise.reject(new Error('Status error. User not in Pact or Status is not Requested.'));
+      return Promise.reject(HTTPError(404, 'Status error. User not in Pact or Status is not Requested.'));
     return Promise.resolve();
   })
 }
@@ -296,6 +370,9 @@ function deletePact(eventBody, user_id) {
       checkUserExists(user_id)
     )
     .then(() =>
+      checkUserInPact(user_id, eventBody.pact_id)
+    )
+    .then(() =>
       Pact.deletePact({ pact_id: eventBody.pact_id })
     )
 }
@@ -307,6 +384,9 @@ function updatePact(eventBody, user_id) {
     )
     .then(() =>
       checkUserExists(user_id)
+    )
+    .then(() =>
+      checkUserInPact(user_id, eventBody.pact_id)
     )
     .then(() =>
       checkUsernameInput(eventBody)
@@ -356,4 +436,41 @@ function declinePact(eventBody, user_id) {
     .then(() =>
       Pact.setUserPactStatus(eventBody.pact_id, user_id, "declined")
     )
+}
+
+function getCheckIns(pact_id, user_id) {
+  return checkPactExists(pact_id)
+    .then(() => 
+      checkUserInPact(user_id, pact_id)
+    )
+    .then(() =>
+      CheckIn.getCheckIns(pact_id)
+    )
+    .then((checkIns) => 
+      !checkIns
+          ? Promise.reject(HTTPError(500, 'Error fetching check-ins.'))
+          : ({ checkIns: checkIns })
+    );
+}
+
+function checkIn(body, user_id) {
+  const optional = {
+    proof_id: body.proof_id,
+    comments: body.comments
+  }
+
+  const pact_id = body.pact_id;
+
+  return checkPactExists(pact_id)
+    .then(() => 
+      checkUserInPact(user_id, pact_id)
+    )
+    .then(() =>
+      CheckIn.addCheckIn(body.pact_id, user_id, optional)
+    )
+    .then((row) => 
+      !row
+          ? Promise.reject(HTTPError(500, 'Error checking in.'))
+          : (row)
+    );
 }
