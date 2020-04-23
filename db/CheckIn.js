@@ -4,7 +4,8 @@ const uuid = require('uuid');
 module.exports.getCheckIns = async (pact_id) => {
   const client = db.connectMysql();
   const res = await client.query(
-    'SELECT * FROM PactEvent\
+    'SELECT PactEvent.*, User.username FROM PactEvent\
+    JOIN User ON User.user_id = PactEvent.user_id\
     WHERE pact_id = ?\
     ORDER BY timestamp DESC',
     [pact_id]);
