@@ -164,5 +164,17 @@ functions:
                 prefix: true
                 limit: false
 
+  suggest-users:
+    handler: friends/FriendsHandler.suggestUsers
+    events:
+      - http:
+          path: friends/suggest
+          method: get
+          cors: true
+          request:
+            parameters:
+              querystrings:
+                limit: false
+
 plugins:
   - serverless-offline
