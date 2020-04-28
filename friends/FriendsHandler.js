@@ -160,6 +160,34 @@ module.exports.searchUsers = async (event, context) => {
     }));
 }
 
+/*
+ * GET /friends/suggest?limit=...
+ * Search global users database for users with either username or firstname containing prefix
+ */
+module.exports.suggestUsers = async (event, context) => {
+  context.callbackWaitsForEmptyEventLoop = false;
+
+  const token = event.headers.Authorization;
+  const decoded = VerifyToken.decodeJwt(token);
+  if (!decoded) // token empty or invalid
+  return {
+    statusCode: 403,
+    body: JSON.stringify({ message: 'Forbidden: missing or invalid JWT.'  })
+  };
+
+  const limit = parseInt(event.queryStringParameters.limit) || 10;
+
+  return await suggestUsers(decoded.id, limit)
+    .then(resp => ({
+      statusCode: 200,
+      body: JSON.stringify(resp)
+    }))
+    .catch(err => ({
+      statusCode: err.statusCode || 500,
+      body: JSON.stringify({ message: err.message })
+    }));
+}
+
 /**
  * Helpers
  */
@@ -252,6 +280,15 @@ function declineRequest(id, eventBody) {
 
 function searchUsers(prefix, limit) {
   return User.findUsersByPrefix(prefix, limit)
+    .then(users =>
+      !users
+        ? Promise.reject(HTTPError(500, 'Error fetching users.'))
+        : ({ users: users })
+    );
+}
+
+function suggestUsers(id, limit) {
+  return User.getFriendsSuggestions(id, limit)
     .then(users =>
       !users
         ? Promise.reject(HTTPError(500, 'Error fetching users.'))

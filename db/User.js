@@ -244,3 +244,128 @@ module.exports.deleteRequest = async (id1, id2) => {
     await driver.close();
   }
 }
+
+// Friends suggestion (id = user_id of current user, limit = limit)
+module.exports.getFriendsSuggestions = async (id, limit) => {
+  // get top $limit people who have mutual friends
+  // mutual = map user_id to number of mutual friends
+  const driver = await db.connectNeo4j();
+  const session = driver.session();
+  let mutual = {};
+  try {
+    const result = await session.run(
+      'MATCH (p:User {user_id: $user_id})-[:FRIENDS*2]-(f:User)\
+      WHERE NOT (p)-[:FRIENDS]-(f)\
+      WITH p, f\
+      MATCH (p)-[:FRIENDS]-(mutual)-[:FRIENDS*1]-(f)\
+      RETURN f.user_id as user_id, COUNT(DISTINCT mutual.user_id) as mutual\
+      ORDER BY mutual DESC\
+      LIMIT $limit',
+      { user_id: id, limit: limit }
+    );
+
+    result.records.forEach(record => { 
+      mutual[record.get('user_id')] = record.get('mutual').toNumber();
+    });
+  } catch (error) {
+    console.error("Neo4j: " + error);
+    return null;
+  } finally {
+    await session.close();
+    await driver.close();
+  }
+
+  console.log("Mutual: ");
+  console.log(mutual);
+
+  // get my top 5 tags
+  const client = db.connectMysql();
+  const myTags = await client.query(
+    'select c.tag_name, count(a.tag_id) as count from pact.PactTag a\
+    join pact.PactParticipants b\
+    on a.pact_id = b.pact_id\
+    join pact.Tag c\
+    on a.tag_id = c.tag_id\
+    where user_id = ?\
+    group by tag_name\
+    order by count desc\
+    limit 5',
+    [id]
+  );
+  const myHist = {};
+  for (let i = 0; i < myTags.length; i++) {
+    const row = myTags[i];
+    myHist[row.tag_name] = row.count;
+  }
+
+  console.log("myHist: ");
+  console.log(myHist);
+
+  // get tags of the suggested users
+  const potentialTags = await client.query(
+    'select b.user_id, c.tag_name, count(a.tag_id) as count from pact.PactTag a\
+    join pact.PactParticipants b\
+    on a.pact_id = b.pact_id\
+    join pact.Tag c\
+    on a.tag_id = c.tag_id\
+    where b.user_id in (?)\
+    and (b.status = \'accepted\' OR b.status = \'created\')\
+    group by tag_name',
+    [Object.keys(mutual)]
+  );
+  client.quit();
+
+  console.log("potentialTags: ");
+  console.log(potentialTags);
+
+  // compute tag similarity score for each suggested user
+  const score = {};
+  const max = {};
+  const maxTag = {};
+  for (let i = 0; i < potentialTags.length; i++) {
+    const row = potentialTags[i];
+    const cur_user = row.user_id;
+    const tag = row.tag_name;
+    const frequency = row.count;
+
+    if (!(cur_user in score)) {
+      score[cur_user] = 0;
+      max[cur_user] = 0;
+      maxTag[cur_user] = '';
+    }
+
+    if (tag in myHist) {
+      score[cur_user] += 1;
+
+      if (frequency > max[cur_user]) {
+        max[cur_user] = frequency;
+        maxTag[cur_user] = tag;
+      }
+    }
+  }
+
+  // get user details
+  let details = await this.getUsersDetails(Object.keys(mutual));
+
+  console.log("Details pre-process: ");
+  console.log(details);
+
+  // sort user details list desc using metric
+  // metric = # mutual friends + # common tags
+  for (let i = 0; i < details.length; i++) {
+    const user_id = details[i].user_id;
+    details[i].mutual = mutual[user_id] || 0;
+    details[i].common = maxTag[user_id] || '';
+
+    details[i].metric = details[i].mutual + (score[user_id] || 0);
+  }
+
+  details = details.sort(function(a, b) {
+    return b.metric - a.metric;
+  });
+
+  console.log("Details post-sort: ");
+  console.log(details);
+
+  return details;
+}
