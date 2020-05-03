@@ -440,13 +440,13 @@ function declinePact(eventBody, user_id) {
 
 function getCheckIns(pact_id, user_id) {
   return checkPactExists(pact_id)
-    .then(() => 
+    .then(() =>
       checkUserInPact(user_id, pact_id)
     )
     .then(() =>
       CheckIn.getCheckIns(pact_id)
     )
-    .then((checkIns) => 
+    .then((checkIns) =>
       !checkIns
           ? Promise.reject(HTTPError(500, 'Error fetching check-ins.'))
           : ({ checkIns: checkIns })
@@ -462,13 +462,13 @@ function checkIn(body, user_id) {
   const pact_id = body.pact_id;
 
   return checkPactExists(pact_id)
-    .then(() => 
+    .then(() =>
       checkUserInPact(user_id, pact_id)
     )
     .then(() =>
       CheckIn.addCheckIn(body.pact_id, user_id, optional)
     )
-    .then((row) => 
+    .then((row) =>
       !row
           ? Promise.reject(HTTPError(500, 'Error checking in.'))
           : (row)
