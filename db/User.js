@@ -89,6 +89,13 @@ module.exports.getFriendsIds = async (id) => {
   }
 }
 
+module.exports.getUserDetails = async (user_id) => {
+  const client = db.connectMysql();
+  let details = await client.query('SELECT user_id, username, firstname, lastname, email, location FROM User WHERE user_id = ?', [user_id]);
+  client.quit();
+  return details[0];
+}
+
 module.exports.getUsersDetails = async (user_ids) => {
   const client = db.connectMysql();
   let details = await client.query(

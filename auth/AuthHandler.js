@@ -1,9 +1,10 @@
 const User = require('../db/User');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs-then');
+const VerifyToken = require('../auth/VerifyToken');
 const HTTPError = require('../common/HTTPError');
 
-/* 
+/*
  * Functions
  */
 
@@ -28,6 +29,28 @@ module.exports.register = async (event, context) => {
     .then(session => ({
       statusCode: 200,
       body: JSON.stringify(session)
+    }))
+    .catch(err => ({
+      statusCode: err.statusCode || 500,
+      body: JSON.stringify({ message: err.message })
+    }));
+};
+
+module.exports.getInfo = async (event, context) => {
+  context.callbackWaitsForEmptyEventLoop = false;
+
+  const token = event.headers.Authorization;
+  const decoded = VerifyToken.decodeJwt(token);
+  if (!decoded) // token empty or invalid
+    return {
+      statusCode: 403,
+      body: JSON.stringify({ message: 'Forbidden: missing or invalid JWT.'  })
+    };
+
+  return await getInfo(decoded.id)
+    .then(resp => ({
+      statusCode: 200,
+      body: JSON.stringify(resp)
     }))
     .catch(err => ({
       statusCode: err.statusCode || 500,
@@ -101,4 +124,12 @@ function comparePassword(eventPassword, userPassword, userId) {
         ? Promise.reject(HTTPError(403, 'The credentials do not match.'))
         : signToken(userId)
     });
+}
+
+function getInfo(user_id) {
+  return User.getUserDetails(user_id)
+    .then(details => {
+      console.log(details);
+      return details;
+    })
 }

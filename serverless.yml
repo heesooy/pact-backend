@@ -38,6 +38,14 @@ functions:
           method: post
           cors: true
 
+  getInfo:
+    handler: auth/AuthHandler.getInfo
+    events:
+      - http:
+          path: getuserinfo
+          method: get
+          cors: true
+
   # pacts
   getUserPacts:
     handler: pact/PactHandler.getUserPacts
