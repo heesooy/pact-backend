@@ -255,7 +255,7 @@ module.exports.getFriendsSuggestions = async (id, limit) => {
   try {
     const result = await session.run(
       'MATCH (p:User {user_id: $user_id})-[:FRIENDS*2]-(f:User)\
-      WHERE NOT (p)-[:FRIENDS]-(f)\
+      WHERE NOT (p)-[:FRIENDS]-(f) AND f.user_id <> $user_id\
       WITH p, f\
       MATCH (p)-[:FRIENDS]-(mutual)-[:FRIENDS*1]-(f)\
       RETURN f.user_id as user_id, COUNT(DISTINCT mutual.user_id) as mutual\

@@ -175,7 +175,9 @@ module.exports.suggestUsers = async (event, context) => {
     body: JSON.stringify({ message: 'Forbidden: missing or invalid JWT.'  })
   };
 
-  const limit = parseInt(event.queryStringParameters.limit) || 10;
+  let limit = 10;
+  if (event.queryStringParameters != null)
+    limit = parseInt(event.queryStringParameters.limit) || 10;
 
   return await suggestUsers(decoded.id, limit)
     .then(resp => ({
