@@ -25,9 +25,8 @@ module.exports.addPartcipantsToPact = async (pact_info) => {
   participant.pact_id = pact_info.pact_id;
   for (let i = 0; i < pact_info.users.length; i++) {
     participant.user_id = pact_info.users[i];
-    // participant.status = "requested";
-    participant.status = "accepted";
-    if (i == 0){
+    participant.status = "requested";
+    if (i == 0) {
       participant.status = "created";
     }
     await client.query('INSERT INTO PactParticipants SET ?', [participant]);
@@ -35,6 +34,13 @@ module.exports.addPartcipantsToPact = async (pact_info) => {
   client.quit();
   console.log(pact_info);
   return pact_info;
+};
+
+module.exports.updatePact = async (pact) => {
+  const client = db.connectMysql();
+  await client.query('UPDATE Pact SET title = ?, description = ? WHERE pact_id = ?', [pact.title, pact.description, pact.pact_id]);
+  client.quit();
+  return pact.pact_id;
 };
 
 module.exports.findPact = async (pact_id) => {

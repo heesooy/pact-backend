@@ -395,21 +395,9 @@ function updatePact(eventBody, user_id) {
       if (!success) {
         return Promise.reject(HTTPError(404, 'Participants error. Participant does not exist.'));
       }
+      Pact.updatePact({ pact_id: eventBody.pact_id, title: eventBody.title, description: eventBody.description });
       return Pact.findPact(eventBody.pact_id);
     })
-    .then((res) => {
-      Pact.deletePact({ pact_id: eventBody.pact_id });
-      return res;
-    })
-    .then((res) =>
-      Pact.createPact({ pact_id: res.pact_id, title: eventBody.title, description: eventBody.description, streak: res.streak, period_length: eventBody.period_length, period_target: eventBody.period_target, privacy_level: eventBody.privacy_level })
-    )
-    .then((res) =>
-      addPactParticipants(res, eventBody.participants, user_id)
-    )
-    .then((res) =>
-      addPactTags(res, eventBody.tags)
-    )
 }
 
 function acceptPact(eventBody, user_id) {
