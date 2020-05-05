@@ -308,6 +308,12 @@ module.exports.getFriendsSuggestions = async (id, limit) => {
   console.log("myHist: ");
   console.log(myHist);
 
+  // TODO: maybe return random users if there are not
+  // enough users to suggest.
+  if (Object.keys(mutual).length == 0) {
+    return [];
+  }
+
   // get tags of the suggested users
   const potentialTags = await client.query(
     'select b.user_id, c.tag_name, count(a.tag_id) as count from pact.PactTag a\
