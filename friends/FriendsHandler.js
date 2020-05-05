@@ -219,6 +219,13 @@ function sendRequest(id, eventBody) {
         return Promise.reject(HTTPError(500, 'Error checking if already friends.'));
       if (friended == true)
         return Promise.reject(HTTPError(409, 'Users are already friends.'));
+    }).then(() => 
+      User.hasRequested(id, eventBody.user_id)
+    ).then(requested => {
+      if (requested == null)
+        return Promise.reject(HTTPError(500, 'Error checking if friend request exists.'));
+      if (requested == true)
+        return Promise.reject(HTTPError(409, 'Friend request already sent.'));
     }).then(() =>
       User.createRequest(id, eventBody.user_id) // create 'REQUESTED' relationship
     ).then(success =>
