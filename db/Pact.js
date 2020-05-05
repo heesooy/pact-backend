@@ -25,7 +25,8 @@ module.exports.addPartcipantsToPact = async (pact_info) => {
   participant.pact_id = pact_info.pact_id;
   for (let i = 0; i < pact_info.users.length; i++) {
     participant.user_id = pact_info.users[i];
-    participant.status = "requested";
+    // participant.status = "requested";
+    participant.status = "accepted";
     if (i == 0) {
       participant.status = "created";
     }
